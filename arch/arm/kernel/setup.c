@@ -574,10 +574,10 @@ static void __init setup_processor(void)
 	processor = *list->proc;
 #endif
 #ifdef MULTI_TLB
-	cpu_tlb = *list->tlb;
+	cpu_tlb = *list->tlb;	/* 0으로 초기화 */
 #endif
 #ifdef MULTI_USER
-	cpu_user = *list->user;
+	cpu_user = *list->user;	/* 0으로 초기화 */
 #endif
 #ifdef MULTI_CACHE
 	cpu_cache = *list->cache;
@@ -878,8 +878,8 @@ void __init setup_arch(char **cmdline_p)
 	parse_early_param();
 
 	sort(&meminfo.bank, meminfo.nr_banks, sizeof(meminfo.bank[0]), meminfo_cmp, NULL);
-	sanity_check_meminfo();
-	arm_memblock_init(&meminfo, mdesc);
+	sanity_check_meminfo();	/* memomory info를 bank로 bank[0](lowmem), bank[1](highmem)를 분리한다. */
+	arm_memblock_init(&meminfo, mdesc); 
 
 	paging_init(mdesc);
 	request_standard_resources(mdesc);

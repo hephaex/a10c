@@ -319,7 +319,7 @@ static void __init arm_memory_present(void)
 			       memblock_region_memory_end_pfn(reg));
 }
 #endif
-
+/* !ms 3005 */
 static bool arm_memblock_steal_permitted = true;
 
 phys_addr_t __init arm_memblock_steal(phys_addr_t size, phys_addr_t align)
@@ -338,8 +338,9 @@ phys_addr_t __init arm_memblock_steal(phys_addr_t size, phys_addr_t align)
 void __init arm_memblock_init(struct meminfo *mi,
 	const struct machine_desc *mdesc)
 {
+  /* !ms3004 arm_memblock_init(&meminfo, mdesc); */
 	int i;
-
+	/* mi->nr_banks = 2 */
 	for (i = 0; i < mi->nr_banks; i++)
 		memblock_add(mi->bank[i].start, mi->bank[i].size);
 
@@ -348,23 +349,30 @@ void __init arm_memblock_init(struct meminfo *mi,
 	memblock_reserve(__pa(_sdata), _end - _sdata);
 #else
 	memblock_reserve(__pa(_stext), _end - _stext);
+	/* _stext: 0xC0008000, __pa(_stext): 0x40008000, _end - _stext = 커널의 크기
+	 * 커널실행영역을 memblock.reserved로 설정한다. */
 #endif
 #ifdef CONFIG_BLK_DEV_INITRD
 	if (phys_initrd_size &&
 	    !memblock_is_region_memory(phys_initrd_start, phys_initrd_size)) {
+	  /* initrd로 넘어온 메모리 영역이 memblock.memory 안에 있는지 검사 */
 		pr_err("INITRD: 0x%08llx+0x%08lx is not a memory region - disabling initrd\n",
 		       (u64)phys_initrd_start, phys_initrd_size);
 		phys_initrd_start = phys_initrd_size = 0;
 	}
 	if (phys_initrd_size &&
 	    memblock_is_region_reserved(phys_initrd_start, phys_initrd_size)) {
+	  /*  initrd로 넘어온 메모리 영역이 memblock.reserved 안에 있는지 검사 
+	   * initrd가 reserved아면 안된다. 
+	   * 겹친다면 에러로그 출력과 0으로 초기화한다.
+	   */
 		pr_err("INITRD: 0x%08llx+0x%08lx overlaps in-use memory region - disabling initrd\n",
 		       (u64)phys_initrd_start, phys_initrd_size);
 		phys_initrd_start = phys_initrd_size = 0;
 	}
 	if (phys_initrd_size) {
 		memblock_reserve(phys_initrd_start, phys_initrd_size);
-
+		/* memblock.reserved에 initrd를 추가 */
 		/* Now convert initrd to virtual addresses */
 		initrd_start = __phys_to_virt(phys_initrd_start);
 		initrd_end = initrd_start + phys_initrd_size;
@@ -372,21 +380,41 @@ void __init arm_memblock_init(struct meminfo *mi,
 #endif
 
 	arm_mm_memblock_reserve();
+	/* memblock.reserved 안에 page table을 추가 */
 	arm_dt_memblock_reserve();
-
+	/*  memblock.reserved 안에 dtb을 추가 */
 	/* reserve any platform specific memblock areas */
 	if (mdesc->reserve)
 		mdesc->reserve();
-
+	/* 
+	 * .reserve = exynos5_reserve
+	 * exynos5_reserve()함수를 실행한다.  
+	 * dtb file에서 지정한 mfc reserve를 찾아서 reserve함
+	 */
 	/*
 	 * reserve memory for DMA contigouos allocations,
 	 * must come from DMA area inside low memory
 	 */
+
+	/* 
+	 * arm_dma_limit = ((phys_addr_t)~0) = 0xFFFFFFFF
+	 * arm_lowmem_limit = bank_end;
+	 * CONFIG_CMA_SIZE_~~ 상수들이 정의되지 않아 아무일도 안한다.
+	 * boot parameter에 cma= 옵션이 들어올 때는 cma가 활성화 된다.
+         * 자세한 사항은 아래 두 파일을 참조
+         * Documentation/kernel-parameters.txt
+         * include/linux/dma-contiguous.h
+	 */
 	dma_contiguous_reserve(min(arm_dma_limit, arm_lowmem_limit));
 
 	arm_memblock_steal_permitted = false;
+	/* memblock에서 해당영역을 지우지 못하게 하는 것 */
 	memblock_allow_resize();
+	/* memblock_can_resize = 1;
+	 * mm/memblock.c의 memblock_double_array에서 double array로의 확장이 가능해진다.
+	 */
 	memblock_dump_all();
+	/* debug 시 메모리 영역의 base, size를 출력 */
 }
 
 void __init bootmem_init(void)

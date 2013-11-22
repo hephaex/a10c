@@ -77,7 +77,7 @@
 # endif
 #else
 # define v4_possible_flags	0
-# define v4_always_flags	(-1UL)
+# define v4_always_flags	(-1UL) /* !ms 3306 this */
 #endif
 
 #define fa_tlb_flags	(TLB_WB | TLB_DCLEAN | TLB_BARRIER | \
@@ -229,7 +229,7 @@ extern void __cpu_flush_kern_tlb_range(unsigned long, unsigned long);
 
 extern struct cpu_tlb_fns cpu_tlb;
 
-#define __cpu_tlb_flags			cpu_tlb.tlb_flags
+#define __cpu_tlb_flags			cpu_tlb.tlb_flags /* cpu_tlb는 0으로 초기화했었음 */
 
 /*
  *	TLB Management
@@ -293,7 +293,7 @@ extern struct cpu_tlb_fns cpu_tlb;
 				 fa_possible_flags | \
 				 v6wbi_possible_flags | \
 				 v7wbi_possible_flags)
-
+/* !ms 3006 */
 #define always_tlb_flags	(v4_always_flags & \
 				 v4wbi_always_flags & \
 				 fr_always_flags & \
@@ -304,6 +304,8 @@ extern struct cpu_tlb_fns cpu_tlb;
 
 #define tlb_flag(f)	((always_tlb_flags & (f)) || (__tlb_flag & possible_tlb_flags & (f)))
 
+/* !ms 3006
+ * tlb_op(TLB_DCLEAN, "c7, c10, 1 @ flush_pmd" , pmd); */
 #define __tlb_op(f, insnarg, arg)					\
 	do {								\
 		if (always_tlb_flags & (f))				\
@@ -614,10 +616,12 @@ static inline void flush_pmd_entry(void *pmd)
 	if (tlb_flag(TLB_WB))
 		dsb(ishst);
 }
-
+/* !ms 3306 */
 static inline void clean_pmd_entry(void *pmd)
 {
+  /* __cpu_tlb_flags : 0 */
 	const unsigned int __tlb_flag = __cpu_tlb_flags;
+
 
 	tlb_op(TLB_DCLEAN, "c7, c10, 1	@ flush_pmd", pmd);
 	tlb_l2_op(TLB_L2CLEAN_FR, "c15, c9, 1  @ L2 flush_pmd", pmd);

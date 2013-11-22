@@ -1949,7 +1949,7 @@ static ssize_t dapm_widget_power_read_file(struct file *file,
 				w->active ? "active" : "inactive");
 
 	list_for_each_entry(p, &w->sources, list_sink) {
-		if (p->connected && !p->connected(w, p->source))
+		if (p->connected && !p->connected(w, p->sink))
 			continue;
 
 		if (p->connect)
@@ -3495,7 +3495,6 @@ int snd_soc_dapm_new_dai_widgets(struct snd_soc_dapm_context *dapm,
 		if (!w) {
 			dev_err(dapm->dev, "ASoC: Failed to create %s widget\n",
 				dai->driver->playback.stream_name);
-			return -ENOMEM;
 		}
 
 		w->priv = dai;
@@ -3514,7 +3513,6 @@ int snd_soc_dapm_new_dai_widgets(struct snd_soc_dapm_context *dapm,
 		if (!w) {
 			dev_err(dapm->dev, "ASoC: Failed to create %s widget\n",
 				dai->driver->capture.stream_name);
-			return -ENOMEM;
 		}
 
 		w->priv = dai;

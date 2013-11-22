@@ -21,7 +21,7 @@
 #define PMD_TYPE_TABLE		(_AT(pmdval_t, 1) << 0)
 #define PMD_TYPE_SECT		(_AT(pmdval_t, 2) << 0)
 #define PMD_BIT4		(_AT(pmdval_t, 1) << 4)
-#define PMD_DOMAIN(x)		(_AT(pmdval_t, (x)) << 5)
+#define PMD_DOMAIN(x)		(_AT(pmdval_t, (x)) << 5) /* !ms 3006 */
 #define PMD_PROTECTION		(_AT(pmdval_t, 1) << 9)		/* v5 */
 /*
  *   - section

@@ -9,7 +9,7 @@
 
 #ifndef __PLAT_SAMSUNG_MFC_H
 #define __PLAT_SAMSUNG_MFC_H __FILE__
-
+/* !ms 3305 mfc: multi format codec */
 struct s5p_mfc_dt_meminfo {
 	unsigned long	loff;
 	unsigned long	lsize;

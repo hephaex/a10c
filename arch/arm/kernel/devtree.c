@@ -54,6 +54,9 @@ void __init arm_dt_memblock_reserve(void)
 	 */
 	reserve_map = ((void*)initial_boot_params) +
 			be32_to_cpu(initial_boot_params->off_mem_rsvmap);
+	/* !ms3005
+	 * off_mem_rsvmap : 메모리 reserve map의 offset
+	 * device tree영역을 reserver region에 추가함 */
 	while (1) {
 		base = be64_to_cpup(reserve_map++);
 		size = be64_to_cpup(reserve_map++);

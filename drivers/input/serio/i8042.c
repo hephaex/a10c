@@ -223,26 +223,21 @@ static int i8042_flush(void)
 {
 	unsigned long flags;
 	unsigned char data, str;
-	int count = 0;
-	int retval = 0;
+	int i = 0;
 
 	spin_lock_irqsave(&i8042_lock, flags);
 
-	while ((str = i8042_read_status()) & I8042_STR_OBF) {
-		if (count++ < I8042_BUFFER_SIZE) {
-			udelay(50);
-			data = i8042_read_data();
-			dbg("%02x <- i8042 (flush, %s)\n",
-			    data, str & I8042_STR_AUXDATA ? "aux" : "kbd");
-		} else {
-			retval = -EIO;
-			break;
-		}
+	while (((str = i8042_read_status()) & I8042_STR_OBF) && (i < I8042_BUFFER_SIZE)) {
+		udelay(50);
+		data = i8042_read_data();
+		i++;
+		dbg("%02x <- i8042 (flush, %s)\n",
+		    data, str & I8042_STR_AUXDATA ? "aux" : "kbd");
 	}
 
 	spin_unlock_irqrestore(&i8042_lock, flags);
 
-	return retval;
+	return i;
 }
 
 /*
@@ -854,7 +849,7 @@ static int __init i8042_check_aux(void)
 
 static int i8042_controller_check(void)
 {
-	if (i8042_flush()) {
+	if (i8042_flush() == I8042_BUFFER_SIZE) {
 		pr_err("No controller found\n");
 		return -ENODEV;
 	}

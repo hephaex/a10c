@@ -42,6 +42,10 @@
 #ifndef __ASSEMBLY__
 
 #if __LINUX_ARM_ARCH__ >= 4
+/* !ms 3306
+ * cr_alignment : 0x10c5387d, CR_V: (1<13)
+ * vertors_high() : (1<<13)
+ */
 #define vectors_high()	(cr_alignment & CR_V)
 #else
 #define vectors_high()	(0)

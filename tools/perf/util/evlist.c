@@ -545,17 +545,10 @@ union perf_event *perf_evlist__mmap_read(struct perf_evlist *evlist, int idx)
 
 	md->prev = old;
 
-	return event;
-}
-
-void perf_evlist__mmap_consume(struct perf_evlist *evlist, int idx)
-{
-	if (!evlist->overwrite) {
-		struct perf_mmap *md = &evlist->mmap[idx];
-		unsigned int old = md->prev;
-
+	if (!evlist->overwrite)
 		perf_mmap__write_tail(md, old);
-	}
+
+	return event;
 }
 
 static void __perf_evlist__munmap(struct perf_evlist *evlist, int idx)

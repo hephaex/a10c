@@ -113,10 +113,10 @@ static int __kprobes nmi_handle(unsigned int type, struct pt_regs *regs, bool b2
 		u64 before, delta, whole_msecs;
 		int remainder_ns, decimal_msecs, thishandled;
 
-		before = sched_clock();
+		before = local_clock();
 		thishandled = a->handler(type, regs);
 		handled += thishandled;
-		delta = sched_clock() - before;
+		delta = local_clock() - before;
 		trace_nmi_handler(a->handler, (int)delta, thishandled);
 
 		if (delta < nmi_longest_ns)

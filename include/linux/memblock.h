@@ -149,7 +149,7 @@ phys_addr_t memblock_alloc_try_nid(phys_addr_t size, phys_addr_t align, int nid)
 phys_addr_t memblock_alloc(phys_addr_t size, phys_addr_t align);
 
 /* Flags for memblock_alloc_base() amd __memblock_alloc_base() */
-#define MEMBLOCK_ALLOC_ANYWHERE	(~(phys_addr_t)0)
+#define MEMBLOCK_ALLOC_ANYWHERE	(~(phys_addr_t)0) /* !ms3005 */
 #define MEMBLOCK_ALLOC_ACCESSIBLE	0
 
 phys_addr_t memblock_alloc_base(phys_addr_t size, phys_addr_t align,
@@ -167,10 +167,10 @@ int memblock_is_reserved(phys_addr_t addr);
 int memblock_is_region_reserved(phys_addr_t base, phys_addr_t size);
 
 extern void __memblock_dump_all(void);
-
+/* !ms3305 */
 static inline void memblock_dump_all(void)
 {
-	if (memblock_debug)
+	if (memblock_debug)	/* membloc_debug: 0 */
 		__memblock_dump_all();
 }
 
@@ -233,10 +233,11 @@ static inline unsigned long memblock_region_reserved_end_pfn(const struct memblo
 	     region++)
 
 
-#ifdef CONFIG_ARCH_DISCARD_MEMBLOCK
+#ifdef CONFIG_ARCH_DISCARD_MEMBLOCK /* CONFIG_ARCH_DISCARD_MEMBLOCK=n */
 #define __init_memblock __meminit
 #define __initdata_memblock __meminitdata
 #else
+/* !ms3305 */
 #define __init_memblock
 #define __initdata_memblock
 #endif

@@ -542,7 +542,7 @@ EXPORT_SYMBOL(d_drop);
  * If ref is non-zero, then decrement the refcount too.
  * Returns dentry requiring refcount drop, or NULL if we're done.
  */
-static struct dentry *
+static inline struct dentry *
 dentry_kill(struct dentry *dentry, int unlock_on_failure)
 	__releases(dentry->d_lock)
 {
@@ -630,8 +630,7 @@ repeat:
 			goto kill_it;
 	}
 
-	if (!(dentry->d_flags & DCACHE_REFERENCED))
-		dentry->d_flags |= DCACHE_REFERENCED;
+	dentry->d_flags |= DCACHE_REFERENCED;
 	dentry_lru_add(dentry);
 
 	dentry->d_lockref.count--;

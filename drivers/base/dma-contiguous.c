@@ -113,18 +113,21 @@ void __init dma_contiguous_reserve(phys_addr_t limit)
 	if (size_cmdline != -1) {
 		selected_size = size_cmdline;
 	} else {
-#ifdef CONFIG_CMA_SIZE_SEL_MBYTES
+#ifdef CONFIG_CMA_SIZE_SEL_MBYTES /* CONFIG_CMA_SIZE_SEL_MBYTES=n */
 		selected_size = size_bytes;
-#elif defined(CONFIG_CMA_SIZE_SEL_PERCENTAGE)
+#elif defined(CONFIG_CMA_SIZE_SEL_PERCENTAGE) /*  CONFIG_CMA_SIZE_SEL_PERCENTAGE=n */
 		selected_size = cma_early_percent_memory();
-#elif defined(CONFIG_CMA_SIZE_SEL_MIN)
+#elif defined(CONFIG_CMA_SIZE_SEL_MIN) /* CONFIG_CMA_SIZE_SEL_MIN=n */
 		selected_size = min(size_bytes, cma_early_percent_memory());
-#elif defined(CONFIG_CMA_SIZE_SEL_MAX)
+#elif defined(CONFIG_CMA_SIZE_SEL_MAX) /* CONFIG_CMA_SIZE_SEL_MAX=n */
 		selected_size = max(size_bytes, cma_early_percent_memory());
 #endif
 	}
-
+	/* selected_size: 0 */
 	if (selected_size && !dma_contiguous_default_area) {
+	  /* early_cma(char *p) 가 실행되면 size_cmdline이 -1이 아닌 값을
+	   * 가지고 selected_size 가 0보다 크게되어 이곳이 실행된다.
+	   */
 		pr_debug("%s: reserving %ld MiB for global area\n", __func__,
 			 (unsigned long)selected_size / SZ_1M);
 
